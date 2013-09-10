@@ -42,6 +42,9 @@
 #include <dirent.h>
 #include <sys/statvfs.h>
 
+/* Values for valid falgs to be used when using XXXsetattr, to set multiple 
+   attribute values passed via the related stat structure.
+*/
 #define GLAPI_SET_ATTR_MODE  0x1
 #define GLAPI_SET_ATTR_UID   0x2
 #define GLAPI_SET_ATTR_GID   0x4
@@ -519,48 +522,48 @@ int glfs_posix_lock (glfs_fd_t *fd, int cmd, struct flock *flock);
 glfs_fd_t *glfs_dup (glfs_fd_t *fd);
 
 /* Handle based operations */
-struct glfs_object *glfs_h_lookupat(struct glfs *fs, struct glfs_object *parent, 
-				  const char *path, struct stat *stat);
+struct glfs_object *glfs_h_lookupat (struct glfs *fs, 
+				     struct glfs_object *parent, 
+				     const char *path, struct stat *stat);
 
-int glfs_h_getattrs(struct glfs *fs, struct glfs_object *object, 
-		    struct stat *stat);
+int glfs_h_getattrs (struct glfs *fs, struct glfs_object *object, 
+		     struct stat *stat);
 
 int glfs_h_setattrs (struct glfs *fs, struct glfs_object *object, 
-		    struct stat *sb, int valid, int follow);
+		     struct stat *sb, int valid, int follow);
 
-struct glfs_fd *glfs_h_open(struct glfs *fs, struct glfs_object *object, 
+struct glfs_fd *glfs_h_open (struct glfs *fs, struct glfs_object *object, 
 			     int flags);
 
-struct glfs_object *glfs_h_creat(struct glfs *fs, struct glfs_object *parent, 
+struct glfs_object *glfs_h_creat (struct glfs *fs, struct glfs_object *parent, 
 				  const char *path, int flags, mode_t mode, 
 				  struct stat *sb);
 
-struct glfs_object *glfs_h_mkdir(struct glfs *fs, struct glfs_object *parent, 
-				 const char *path, mode_t flags, 
-				 struct stat *sb);
+struct glfs_object *glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, 
+				  const char *path, mode_t flags, 
+				  struct stat *sb);
 
-struct glfs_object *glfs_h_mknod(struct glfs *fs, struct glfs_object *parent, 
-				 const char *path, mode_t mode, dev_t dev, 
-				 struct stat *sb);
+struct glfs_object *glfs_h_mknod (struct glfs *fs, struct glfs_object *parent, 
+				  const char *path, mode_t mode, dev_t dev, 
+				  struct stat *sb);
 
-struct glfs_gfid *glfs_h_extract_gfid(struct glfs_object *object);
+struct glfs_gfid *glfs_h_extract_gfid (struct glfs_object *object);
 
-struct glfs_object *glfs_h_create_from_gfid(struct glfs *fs, 
-					    struct glfs_gfid *gfid, 
-					    struct stat *sb);
+struct glfs_object *glfs_h_create_from_gfid (struct glfs *fs, 
+					     struct glfs_gfid *gfid, 
+					     struct stat *sb);
 
 struct glfs_fd *glfs_h_opendir (struct glfs *fs, struct glfs_object *object);
 
 int glfs_h_unlink (struct glfs *fs, struct glfs_object *parent, 
 		   const char *path);
 
-int glfs_h_close(struct glfs_object *object);
+int glfs_h_close (struct glfs_object *object);
 
-int glfs_caller_specific_init( void *uid_caller_key,
-                               void *gid_caller_key,
-                               void *future );
+int glfs_caller_specific_init (void *uid_caller_key, void *gid_caller_key, 
+			       void *future);
 int
-glfs_h_truncate( struct glfs *fs, struct glfs_object *object, int offset );
+glfs_h_truncate (struct glfs *fs, struct glfs_object *object, int offset);
 
 __END_DECLS
 

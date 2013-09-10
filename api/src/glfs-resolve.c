@@ -900,3 +900,32 @@ glfs_cwd_get (struct glfs *fs)
 
 	return cwd;
 }
+
+/* This function is to validate an inode in case there is a graph switch post
+   handing out the inode, and as a result we need to refresh the same. Any 
+   handle based gf API that gets an inode as an in parameter, needs to validate 
+   the inode (which would also refresh the same) using this function before 
+   using the inode for any further operation 
+*/
+void 
+glfs_validate_inode (struct glfs *fs, struct glfs_object *object)
+{
+	inode_t *updated = NULL;
+
+	/* TODO: Check if we can upgrade this lock to a R/W with writer 
+	   promotion for faster common case.
+	*/
+	glfs_lock (fs);
+
+	if (object->inode->table->xl != fs->active_subvol) {
+		/* TODO: Unref the old inode handle? 
+		*/
+		updated = __glfs_refresh_inode (fs, fs->active_subvol, 
+						object->inode);
+		object->inode = updated;
+	}
+
+	glfs_unlock (fs);
+
+	return;
+}

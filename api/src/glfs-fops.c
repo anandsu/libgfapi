@@ -14,18 +14,6 @@
 #include "syncop.h"
 #include "glfs.h"
 
-#define DEFAULT_REVAL_COUNT 1
-
-#define ESTALE_RETRY(ret,errno,reval,loc,label) do {	\
-	if (ret == -1 && errno == ESTALE) {	        \
-		if (reval < DEFAULT_REVAL_COUNT) {	\
-			reval++;			\
-			loc_wipe (loc);			\
-			goto label;			\
-		}					\
-	}						\
-	} while (0)
-
 
 int
 glfs_loc_link (loc_t *loc, struct iatt *iatt)

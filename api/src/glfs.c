@@ -603,19 +603,17 @@ glfs_fini (struct glfs *fs)
 }
 
 int
-glfs_caller_specific_init( void *uid_caller_key,
-                           void *gid_caller_key,
-                           void *future
-                         )
+glfs_caller_specific_init (void *uid_caller_key, void *gid_caller_key, 
+			   void *future)
 {
         int rc = -1;
 
-        if (( uid_caller_key == NULL ) || ( gid_caller_key == NULL )) {
+        if ((uid_caller_key == NULL) || (gid_caller_key == NULL)) {
                 return rc;
         }
 
-        p_uid_key = ( pthread_key_t *)uid_caller_key;
-        p_gid_key = ( pthread_key_t *)gid_caller_key;
+        p_uid_key = (pthread_key_t *)uid_caller_key;
+        p_gid_key = (pthread_key_t *)gid_caller_key;
 
         rc = 0;
 
