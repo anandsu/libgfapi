@@ -60,12 +60,6 @@ glfs_h_lookupat (struct glfs *fs, struct glfs_object *parent,
 	struct glfs_object      *object = NULL;
 	loc_t                    loc = {0, };
 
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-#endif
-
 	__glfs_entry_fs (fs);
 
 	/* get the active volume */
@@ -86,7 +80,7 @@ glfs_h_lookupat (struct glfs *fs, struct glfs_object *parent,
 	/* TODO: stale error handling? */
 	ret = glfs_resolve_at (fs, subvol, (parent? parent->inode : NULL), 
 			       path, &loc, &iatt, 0 /*TODO: links? */, 0);
-	
+
 	if (!ret) {
 		/* allocate a return object */
 		object = calloc (1, sizeof(struct glfs_object));
@@ -110,14 +104,6 @@ out:
 	loc_wipe (&loc);
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	return object;
 }
 
@@ -128,12 +114,6 @@ glfs_h_getattrs (struct glfs *fs, struct glfs_object *object,
 	int                      ret = 0;
 	xlator_t                *subvol = NULL;
 	struct iatt              iatt = {0, };
-
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 
 	__glfs_entry_fs (fs);
 
@@ -163,11 +143,6 @@ glfs_h_getattrs (struct glfs *fs, struct glfs_object *object,
 out:
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	return ret;
 }
 
@@ -182,11 +157,6 @@ glfs_h_setattrs (struct glfs *fs, struct glfs_object *object, struct stat *sb,
 	int              reval = 0;
 	int              glvalid = 0;
 
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	__glfs_entry_fs (fs);
 
 	subvol = glfs_active_subvol (fs);
@@ -222,11 +192,6 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	return ret;
 }
 
@@ -251,11 +216,6 @@ glfs_h_open (struct glfs *fs, struct glfs_object *object, int flags)
 		errno = EINVAL;
 		goto out;
 	}
-
-#ifdef DEBUG1
-	printf ("%s:%d: Object ref count IN = %d\n", __FUNCTION__, 
-		__LINE__, object->inode->ref);
-#endif
 
 	glfd = glfs_fd_new (fs);
 	if (!glfd) {
@@ -321,11 +281,6 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	return glfd;
 }
 
@@ -443,15 +398,6 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
-
 	return object;
 }
 
@@ -466,12 +412,6 @@ glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, const char *path,
 	uuid_t              gfid;
 	dict_t             *xattr_req = NULL;
 	struct glfs_object *object = NULL;
-
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-#endif
 
 	__glfs_entry_fs (fs);
 
@@ -565,12 +505,6 @@ glfs_h_mknod (struct glfs *fs, struct glfs_object *parent, const char *path,
 	dict_t             *xattr_req = NULL;
 	int                 reval = 0;
 	struct glfs_object *object = NULL;
-
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-#endif
 
 	__glfs_entry_fs (fs);
 
@@ -685,15 +619,6 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-		__LINE__, object->inode->ref);
-#endif
-
 	return object;
 }
 
@@ -705,12 +630,6 @@ glfs_h_unlink (struct glfs *fs, struct glfs_object *parent, const char *path)
 	loc_t               loc = {0, };
 	struct stat         sb;
 	struct glfs_object *object = NULL;
-
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-#endif
 
 	__glfs_entry_fs (fs);
 
@@ -789,12 +708,6 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (parent)
-		printf ("%s:%d: Parent ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, parent->inode->ref);
-#endif
-
 	return ret;
 }
 
@@ -806,12 +719,6 @@ glfs_h_opendir (struct glfs *fs, struct glfs_object *object)
 	xlator_t        *subvol = NULL;
 	loc_t            loc = {0, };
 	int              reval = 0;
-
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 
 	__glfs_entry_fs (fs);
 
@@ -877,12 +784,6 @@ out:
 	}
 
 	glfs_subvol_done (fs, subvol);
-
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 
 	return glfd;
 }
@@ -988,23 +889,12 @@ out:
 
 	glfs_subvol_done (fs, subvol);
 
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count OUT = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
-
 	return object;
 }
 
 int 
 glfs_h_close (struct glfs_object *object)
 {
-#ifdef DEBUG1
-	if (object)
-		printf ("%s:%d: Object ref count IN = %d\n", __FUNCTION__, 
-			__LINE__, object->inode->ref);
-#endif
 	inode_unref (object->inode);
 	free (object);
 
