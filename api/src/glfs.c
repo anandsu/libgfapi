@@ -52,8 +52,8 @@
 #include "glfs-internal.h"
 #include "hashfn.h"
 
-extern pthread_key_t *p_uid_key;
-extern pthread_key_t *p_gid_key;
+pthread_key_t *p_uid_key;
+pthread_key_t *p_gid_key;
 
 static gf_boolean_t
 vol_assigned (cmd_args_t *args)
