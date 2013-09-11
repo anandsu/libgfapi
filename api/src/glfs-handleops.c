@@ -69,14 +69,12 @@ glfs_h_lookupat (struct glfs *fs, struct glfs_object *parent,
 		goto out;
 	}
 
+	/* validate object inodes that are in args */
 	if (parent) {
 		glfs_validate_inode (fs, parent);
 	}
 
-	/* FIXME: validate relative or absolute path irrespective of parent 
-	 * passed in for API correctness. in args validation.
-	 * Check if the passed in parent is a directory? the type is cached in 
-	 * the iNode so lookup is not required. */
+	/* TODO: in args validation. */
 	/* TODO: stale error handling? */
 	ret = glfs_resolve_at (fs, subvol, (parent? parent->inode : NULL), 
 			       path, &loc, &iatt, 0 /*TODO: links? */, 0);
@@ -125,18 +123,17 @@ glfs_h_getattrs (struct glfs *fs, struct glfs_object *object,
 		goto out;
 	}
 
+	/* validate object inodes that are in args */
 	if (object) {
 		glfs_validate_inode (fs, object);
 	}
 
-	/* FIXME: validate relative or absolute path irrespective of parent 
-	 * passed in for API correctness. in args validation.
-	 * Check if the passed in parent is a directory? the type is cached in 
-	 * the iNode so lookup is not required. */
+	/* TODO: in args validation. */
 	/* TODO: stale error handling? */
 	/* TODO: No error returned from glfs_resolve_base? */
 	glfs_resolve_base (fs, subvol, object->inode, &iatt);
 	//if (!ret) {
+		/* populate stat */
 		glfs_iatt_to_stat (fs, &iatt, stat);
 	//}
 
@@ -159,6 +156,7 @@ glfs_h_setattrs (struct glfs *fs, struct glfs_object *object, struct stat *sb,
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		ret = -1;
@@ -166,11 +164,11 @@ glfs_h_setattrs (struct glfs *fs, struct glfs_object *object, struct stat *sb,
 		goto out;
 	}
 
-	/* Map valid masks from in args
-	*/
+	/* map valid masks from in args */
 	glfs_iatt_from_stat (sb, valid, &iatt, &glvalid);
 
 retry:
+	/* validate object inodes that are in args */
 	if (object) {
 		glfs_validate_inode (fs, object);
 	}
@@ -206,6 +204,7 @@ glfs_h_open (struct glfs *fs, struct glfs_object *object, int flags)
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		errno = EIO;
@@ -224,8 +223,8 @@ glfs_h_open (struct glfs *fs, struct glfs_object *object, int flags)
 	}
 
 retry:
-	/* TODO: Is this enough to just get the right inode? no resolve.
-	 * Should this be done on the retry as well? */
+	/* TODO: should this be done on the retry as well? */
+	/* validate object inodes that are in args */
 	if (object) {
 		glfs_validate_inode (fs, object);
 	}
@@ -299,6 +298,7 @@ glfs_h_creat (struct glfs *fs, struct glfs_object *parent, const char *path,
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		ret = -1;
@@ -325,6 +325,7 @@ glfs_h_creat (struct glfs *fs, struct glfs_object *parent, const char *path,
 	if (!glfd)
 		goto out;
 
+	/* validate object inodes that are in args */
 	if (parent != NULL) {
 		glfs_validate_inode (fs, parent);
 	}
@@ -356,6 +357,7 @@ glfs_h_creat (struct glfs *fs, struct glfs_object *parent, const char *path,
 	printf( "from glfs creat : uid = %d, gid = %d\n", *uid, *gid );
 */
 
+	/* TODO: Do we really need to pass in an fd, can we just pass NULL */
 	ret = syncop_create (subvol, &loc, flags, mode, glfd->fd,
 			     xattr_req, &iatt);
 	if (ret == 0) {
@@ -376,6 +378,8 @@ glfs_h_creat (struct glfs *fs, struct glfs_object *parent, const char *path,
 			
 			object->inode = loc.inode;
 			uuid_copy (object->gfid, object->inode->gfid);
+
+			/* we hold the reference */
 			loc.inode = NULL;
 		}
 	}
@@ -415,6 +419,7 @@ glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, const char *path,
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		ret = -1;
@@ -437,9 +442,11 @@ glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, const char *path,
 		goto out;
 	}
 
+	/* validate object inodes that are in args */
 	if (parent != NULL) {
 		glfs_validate_inode (fs, parent);
 	}
+
 	loc.inode = inode_new (parent->inode->table);
 	if (!loc.inode) {
 		ret = -1;
@@ -474,6 +481,7 @@ glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, const char *path,
 		object->inode = loc.inode;
 		uuid_copy (object->gfid, object->inode->gfid);
 
+		/* we hold the reference */
 		loc.inode = NULL;
 	}
 
@@ -508,6 +516,7 @@ glfs_h_mknod (struct glfs *fs, struct glfs_object *parent, const char *path,
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		ret = -1;
@@ -522,7 +531,7 @@ glfs_h_mknod (struct glfs *fs, struct glfs_object *parent, const char *path,
 		goto out;
 	}
 
-	/* TODO: This is not cleaned up on error, is this fine? */
+	/* TODO: This is not cleaned up on error? */
 	uuid_generate (gfid);
 	ret = dict_set_static_bin (xattr_req, "gfid-req", gfid, 16);
 	if (ret) {
@@ -538,8 +547,8 @@ retry:
 		object = NULL;
 	}
 
-	/* TODO: Is this enough to just get the right inode? no resolve.
-	 * Should this be done on the retry as well? */
+	/* TODO: Should this be done on the retry as well? */
+	/* validate object inodes that are in args */
 	if (parent != NULL) {
 		glfs_validate_inode (fs, parent);
 	}
@@ -556,7 +565,7 @@ retry:
 		goto out;
 	}
 
-	/* FIXME: on a retry loop we may leak an inode */
+	/* FIXME: on a retry loop we may leak an inode? */
 	loc.inode = inode_new (parent->inode->table);
 	if (!loc.inode) {
 		ret = -1;
@@ -633,11 +642,17 @@ glfs_h_unlink (struct glfs *fs, struct glfs_object *parent, const char *path)
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if ( !subvol ) {
 		ret = -1;
 		errno = EIO;
 		goto out;
+	}
+
+	/* validate object inodes that are in args */
+	if (parent != NULL) {
+		glfs_validate_inode (fs, parent);
 	}
 
 	loc.parent = inode_ref (parent->inode);
@@ -722,6 +737,7 @@ glfs_h_opendir (struct glfs *fs, struct glfs_object *object)
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		ret = -1;
@@ -735,8 +751,8 @@ glfs_h_opendir (struct glfs *fs, struct glfs_object *object)
 
 	INIT_LIST_HEAD (&glfd->entries);
 retry:
-	/* TODO: Is this enough to just get the right inode? no resolve.
-	* Should this be done on the retry as well? */
+	/* TODO: Should this be done on the retry as well? */
+	/* validate object inodes that are in args */
 	if (object != NULL) {
 		glfs_validate_inode (fs, object);
 	}
@@ -827,6 +843,7 @@ glfs_h_create_from_gfid (struct glfs *fs, struct glfs_gfid *id, struct stat *sb)
 
 	__glfs_entry_fs (fs);
 
+	/* get the active volume */
 	subvol = glfs_active_subvol (fs);
 	if (!subvol) {
 		errno = EIO;
@@ -885,6 +902,7 @@ glfs_h_create_from_gfid (struct glfs *fs, struct glfs_gfid *id, struct stat *sb)
 	uuid_copy (object->gfid, object->inode->gfid);
 
 out:
+	/* TODO: Check where the inode ref is being held? */
 	loc_wipe (&loc);
 
 	glfs_subvol_done (fs, subvol);
@@ -895,6 +913,7 @@ out:
 int 
 glfs_h_close (struct glfs_object *object)
 {
+	/* Release the held reference */
 	inode_unref (object->inode);
 	free (object);
 
@@ -911,21 +930,21 @@ glfs_h_truncate (struct glfs *fs, struct glfs_object *object, int offset)
 	if ((object == NULL) || (fs == NULL) || (offset <= 0)) {
 		return -1;
 	}
-        __glfs_entry_fs (fs);
 
-        subvol = glfs_active_subvol (fs);
-        if (!subvol) {
-                ret = -1;
-                errno = EIO;
-                goto out;
-        }
+	__glfs_entry_fs (fs);
 
+	/* get the active volume */
+	subvol = glfs_active_subvol (fs);
+	if (!subvol) {
+		ret = -1;
+		errno = EIO;
+		goto out;
+	}
+
+	/* validate object inodes that are in args */
 	if (object) {
 		glfs_validate_inode (fs, object);
 	}
-
-	/* TODO: Do an inode_lookup here? or inode_find rather first?
-	*/
 
 	loc.inode = inode_ref (object->inode);
 	uuid_copy (loc.gfid, object->inode->gfid);
