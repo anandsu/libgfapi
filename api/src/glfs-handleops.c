@@ -81,7 +81,8 @@ glfs_h_lookupat (struct glfs *fs, struct glfs_object *parent,
 
 	if (!ret) {
 		/* allocate a return object */
-		object = calloc (1, sizeof(struct glfs_object));
+		object = GF_CALLOC (1, sizeof(struct glfs_object), 
+				    glfs_mt_glfs_object_t);
 		if (object == NULL) {
 			errno = ENOMEM;
 			goto out;
@@ -369,7 +370,8 @@ glfs_h_creat (struct glfs *fs, struct glfs_object *parent, const char *path,
 		glfs_iatt_to_stat (fs, &iatt, sb);
 
 		if (object == NULL) {
-			object = calloc (1, sizeof(struct glfs_object));
+			object = GF_CALLOC (1, sizeof(struct glfs_object), 
+					    glfs_mt_glfs_object_t);
 			if (object == NULL) {
 				errno = ENOMEM;
 				ret = -1;
@@ -471,7 +473,8 @@ glfs_h_mkdir (struct glfs *fs, struct glfs_object *parent, const char *path,
 		
 		glfs_iatt_to_stat (fs, &iatt, sb);
 		
-		object = calloc (1, sizeof(struct glfs_object));
+		object = GF_CALLOC (1, sizeof(struct glfs_object), 
+				    glfs_mt_glfs_object_t);
 		if (object == NULL) {
 			errno = ENOMEM;
 			ret = -1;
@@ -596,7 +599,8 @@ retry:
 		/* populate stat */
 		glfs_iatt_to_stat (fs, &iatt, sb);
 
-		object = calloc (1, sizeof(struct glfs_object));
+		object = GF_CALLOC (1, sizeof(struct glfs_object), 
+				    glfs_mt_glfs_object_t);
 		if (object == NULL) {
 			errno = ENOMEM;
 			ret = -1;
@@ -658,7 +662,8 @@ glfs_h_unlink (struct glfs *fs, struct glfs_object *parent, const char *path)
 	loc.parent = inode_ref (parent->inode);
 	loc.name = path;
 
-	object = calloc (1, sizeof(struct glfs_object));
+	object = GF_CALLOC (1, sizeof(struct glfs_object), 
+			    glfs_mt_glfs_object_t);
 	if (NULL == object) {
 		errno = ENOMEM;
 		ret = -1;
@@ -890,7 +895,8 @@ glfs_h_create_from_gfid (struct glfs *fs, struct glfs_gfid *id, struct stat *sb)
 	/* populate stat */
 	glfs_iatt_to_stat (fs, &iatt, sb);
 
-	object = calloc (1, sizeof(struct glfs_object));
+	object = GF_CALLOC (1, sizeof(struct glfs_object), 
+			    glfs_mt_glfs_object_t);
 	if (object == NULL) {
 		errno = ENOMEM;
 		ret = -1;
@@ -915,7 +921,7 @@ glfs_h_close (struct glfs_object *object)
 {
 	/* Release the held reference */
 	inode_unref (object->inode);
-	free (object);
+	GF_FREE (object);
 
 	return 0;
 }
